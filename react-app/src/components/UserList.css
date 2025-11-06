@@ -3,29 +3,169 @@
   flex-direction: column;
   align-items: flex-start;
   position: sticky;
-  background-color: #16181C;
-  top: .5em;
+  background-color: var(--bg-secondary);
+  top: 12px;
   height: fit-content;
-  border-radius: .7em;
-  padding: 1em;
+  max-height: calc(100vh - 24px);
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  margin-left: 30px;
+  max-width: 290px;
+  border: 1px solid var(--border-color);
+}
+
+.users-list.container > h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 16px;
+  margin: 0;
+  border-bottom: 1px solid var(--border-color);
+  width: 100%;
+}
+
+.users-list.wrapper {
+  width: 100%;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
+}
+
+.users-list.wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.users-list.wrapper {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .other-users.links {
   display: flex;
   align-items: center;
-  gap: 1.7em;
-  border-radius: .7em;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 0;
   cursor: pointer;
-  height: 3em;
-  margin-bottom: .3em;
-  padding: .5em;
-  width: 97%;
+  min-height: 72px;
+  padding: 12px 16px;
+  width: 100%;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.other-users.links:last-child {
+  border-bottom: none;
 }
 
 .other-users.links:hover {
-  background-color: #23252b;
+  background-color: var(--bg-hover);
 }
 
-.users-list.wrapper {
-  width: 100%;
+.user-list-profile-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.other-users.links .profile-image.user-list {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.other-users.links .profile-image.user-list:hover {
+  opacity: 0.8;
+}
+
+.user-list-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.user-list-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+
+.user-list-name:hover {
+  text-decoration: underline;
+}
+
+.user-list-username {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-list-username:hover {
+  text-decoration: underline;
+}
+
+.follow-button {
+  background-color: var(--text-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 9999px;
+  padding: 8px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.follow-button:hover {
+  background-color: var(--text-secondary);
+}
+
+.follow-button.following {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.follow-button.following:hover {
+  background-color: rgba(244, 33, 46, 0.1);
+  border-color: var(--red-heart);
+  color: var(--red-heart);
+}
+
+.follow-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  .users-list.container {
+    display: none;
+  }
+}
+
+@media (max-width: 688px) {
+  .users-list.container {
+    display: none;
+  }
 }

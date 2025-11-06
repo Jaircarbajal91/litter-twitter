@@ -22,7 +22,10 @@ COPY /react-app/build/* app/static/
 # install psycopg2
 RUN pip install -r requirements.txt
 RUN pip install psycopg2
+# Ensure requests is installed (fallback if not in requirements.txt)
+RUN pip install requests==2.31.0 || true
 # Start the flask environment by setting our
 # closing command to gunicorn app:app
-CMD gunicorn app:app
+# Heroku sets PORT automatically, use sh to expand the variable
+CMD sh -c "gunicorn --bind 0.0.0.0:${PORT:-5000} app:app"
 

@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom';
 import { signUp } from '../../store/session';
 import exit from '../../assets/images/exit.svg'
 import BlueCatIcon from '../../assets/images/BlueCatIcon.svg'
+import fileSelector from '../../assets/images/fileSelector.svg'
 import './SignupForm.css'
 
 const SignUpForm = ({ setShowSignup, setShowLogin }) => {
@@ -21,7 +22,8 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
   const [lastNameErrors, setLastNameErrors] = useState([]);
   const [lastNameCondClass, setLastNameCondClass] = useState('last-name-cond-success');
 
-  const [profileImage, setProfileImage] = useState('');
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [profileImageErrors, setProfileImageErrors] = useState([]);
   const [profileImageCondClass, setProfileImageCondClass] = useState('profile-image-cond-success');
 
@@ -42,29 +44,69 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
 
   const onSignUp = async (e) => {
     e.preventDefault();
-    const image = await isImgUrl(profileImage)
-    if (image) {
-      const data = await dispatch(signUp(username.toLowerCase().trim(), email.trim(), password, firstName.trim(), lastName.trim(), profileImage.trim()));
-      if (data) {
-        const arr = data[0].split(' : ')
-        setErrors([arr[1]])
-      } else {
-        setShowSignup(false)
-      }
+    // Use empty string for profileImage if no file selected (optional)
+    const profileImageUrl = '';
+    const data = await dispatch(signUp(username.toLowerCase().trim(), email.trim(), password, firstName.trim(), lastName.trim(), profileImageUrl));
+    if (data) {
+      const arr = data[0].split(' : ')
+      setErrors([arr[1]])
     } else {
-      setErrors(['Please provide a valid image url'])
+      // Upload profile image after successful signup if file was selected
+      if (profileImageFile) {
+        try {
+          // Get user ID from auth endpoint (user is now logged in after signup)
+          const authRes = await fetch('/api/auth/', {
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (authRes.ok) {
+            const userData = await authRes.json();
+            if (userData?.id) {
+              const formData = new FormData();
+              formData.append("image", profileImageFile);
+              formData.append("type", "user");
+              formData.append("user_id", userData.id);
+              
+              const res = await fetch('/api/images/', {
+                method: "POST",
+                body: formData,
+              });
+              
+              if (res.ok) {
+                const imageData = await res.json();
+                // Image uploaded successfully
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error uploading profile image:', error);
+          // Don't block signup if image upload fails
+        }
+      }
+      setShowSignup(false)
     }
   };
 
+  const updateProfileImage = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileImageFile(file);
+      setErrors([]);
+      const reader = new FileReader(file);
+      reader.readAsDataURL(file);
+      reader.onloadend = function () {
+        setPreviewImage(reader.result);
+      }
+      setProfileImageCondClass('profile-image-cond-success');
+      setProfileImageErrors([]);
+    }
+  };
 
-  function isImgUrl(url) {
-    const img = new Image();
-    img.src = url;
-    return new Promise((resolve) => {
-      img.onerror = () => resolve(false);
-      img.onload = () => resolve(true);
-    });
-  }
+  const removeProfileImage = () => {
+    setProfileImageFile(null);
+    setPreviewImage(null);
+    setProfileImageCondClass('profile-image-cond-success');
+    setProfileImageErrors([]);
+  };
 
 
   useEffect(() => {
@@ -106,18 +148,13 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
       setLastNameCondClass('last-name-cond-success')
     }
 
-    if (!profileImage.match(regex)) {
-      if (profileImage.length >= 1) {
-        setProfileImageCondClass('profile-image-cond-error')
-      } else {
-        setProfileImageCondClass('profile-image-cond-success')
-      }
-      errors.profileImage.push('* Please enter a valid image address. \n E.g. "https://example.com/image.jpg"')
-    } else if (profileImage.length > 200) {
-      setProfileImageCondClass('profile-image-cond-error')
-      errors.profileImage.push('Profile image url too long. Max Length 200')
+    // Profile image is now optional - file upload
+    // No validation needed, just check if file is selected
+    if (profileImageFile) {
+      setProfileImageCondClass('profile-image-cond-success');
     } else {
-      setProfileImageCondClass('profile-image-cond-success')
+      setProfileImageCondClass('profile-image-cond-success');
+      // Optional field, no error
     }
 
     if (email.length < 1) errors.email.push('* Please enter an email address')
@@ -163,13 +200,12 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
       !lastNameErrors.length &&
       !profileImageErrors.length &&
       !emailErrors.length &&
-      !passwordErrors.length &&
-      !errors.length) {
+      !passwordErrors.length) {
       setIsDisabled(false)
     } else {
       setIsDisabled(true)
     }
-  }, [username, firstName, lastName, profileImage, email, password, repeatPassword, usernameErrors.length, firstNameErrors.length, lastNameErrors.length, profileImageErrors.length, emailErrors.length, passwordErrors.length, errors.length])
+  }, [username, firstName, lastName, profileImageFile, email, password, repeatPassword, usernameErrors.length, firstNameErrors.length, lastNameErrors.length, profileImageErrors.length, emailErrors.length, passwordErrors.length])
 
 
   const validateEmail = (email) => {
@@ -256,21 +292,6 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
           </div>
           <div className='signup input-wrapper'>
             <input
-              type='url'
-              className={`input url ${profileImageCondClass}`}
-              placeholder='Profile URL Image'
-              name='profile-image'
-              onChange={(e) => {
-                setProfileImage(e.target.value.trim())
-                setErrors([])
-              }}
-              value={profileImage}
-              required
-            ></input>
-            <span className={`signup-errors url ${profileImageCondClass}`}>{profileImageErrors[0]}</span>
-          </div>
-          <div className='signup input-wrapper'>
-            <input
               type='email'
               className={`input email ${emailCondClass}`}
               placeholder='Email'
@@ -307,6 +328,35 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
               required
             ></input>
             <span className={`signup-errors repeat password ${passwordCondClass}`}>{passwordErrors[0]}</span>
+          </div>
+          <div className='signup input-wrapper'>
+            <div className='profile-image-upload-container'>
+              {previewImage && (
+                <div className='preview-profile-image-container'>
+                  <img className="preview-profile-image" src={previewImage} alt="Profile preview" />
+                  <img 
+                    onClick={removeProfileImage} 
+                    className='remove-profile-img-icon' 
+                    src={exit} 
+                    alt="Remove image" 
+                  />
+                </div>
+              )}
+              <label htmlFor="profile-image-upload" className='profile-image-label'>
+                <img className='file-selector' src={fileSelector} alt="" />
+                <span>Add Profile Image</span>
+              </label>
+              <input
+                type='file'
+                accept=".png,.jpeg,.jpg,.gif"
+                id="profile-image-upload"
+                name='profile-image'
+                onChange={updateProfileImage}
+                style={{ display: 'none' }}
+                onClick={event => event.target.value = null}
+              />
+            </div>
+            <span className={`signup-errors url ${profileImageCondClass}`}>{profileImageErrors[0]}</span>
           </div>
         </div>
         <button disabled={isDisabled} className='button signup form' type='submit'>Sign Up</button>

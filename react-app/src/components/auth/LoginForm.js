@@ -9,11 +9,10 @@ import './LoginForm.css'
 const LoginForm = ({ setShowLogin, setShowSignup }) => {
   const [errors, setErrors] = useState([]);
   const [email, setEmail] = useState('');
-
-  const [emailErrors, setEmailErrors] = useState('')
-  const [passwordErrors, setPasswordErrors] = useState('')
-
   const [password, setPassword] = useState('');
+  const [emailErrors, setEmailErrors] = useState([])
+  const [passwordErrors, setPasswordErrors] = useState([])
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isDisabled, setIsDisabled] = useState(true)
   const user = useSelector(state => state.session.user);
   const dispatch = useDispatch();
@@ -21,18 +20,8 @@ const LoginForm = ({ setShowLogin, setShowSignup }) => {
 
   const onLogin = async (e) => {
     e.preventDefault();
-    if (emailErrors.length || passwordErrors.length) return
-    const data = await dispatch(login(email, password));
-    if (data) {
-      setErrors(["Email or password are incorrect"])
-    } else {
-      setShowLogin(false)
-      history.push('/home')
-    }
-  };
-
-
-  useEffect(() => {
+    setHasSubmitted(true);
+    
     const newEmailErrors = []
     const newPasswordErrors = []
 
@@ -42,12 +31,43 @@ const LoginForm = ({ setShowLogin, setShowSignup }) => {
     setEmailErrors(newEmailErrors)
     setPasswordErrors(newPasswordErrors)
 
-    if (!emailErrors.length && !passwordErrors.length) {
+    if (newEmailErrors.length > 0 || newPasswordErrors.length > 0) {
+      return;
+    }
+
+    const data = await dispatch(login(email, password));
+    if (data) {
+      setErrors(["Email or password are incorrect"])
+    } else {
+      setShowLogin(false)
+      history.push('/home')
+    }
+  };
+
+  useEffect(() => {
+    // Enable button if user has typed in either field
+    if (email.trim().length > 0 || password.trim().length > 0) {
       setIsDisabled(false)
     } else {
       setIsDisabled(true)
     }
-  }, [email, password, emailErrors.length, passwordErrors.length])
+
+    // Only show errors if form has been submitted
+    if (!hasSubmitted) {
+      setEmailErrors([])
+      setPasswordErrors([])
+      return
+    }
+
+    const newEmailErrors = []
+    const newPasswordErrors = []
+
+    if (email.trim().length < 1) newEmailErrors.push('Email is required')
+    if (password.trim().length < 1) newPasswordErrors.push('Password is required')
+
+    setEmailErrors(newEmailErrors)
+    setPasswordErrors(newPasswordErrors)
+  }, [email, password, hasSubmitted])
 
   const updateEmail = (e) => {
     setEmail(e.target.value);
@@ -101,7 +121,7 @@ const LoginForm = ({ setShowLogin, setShowSignup }) => {
               onChange={updateEmail}
             />
             <div className='login-errors-container'>
-              <span className='login errors'>{emailErrors[0]}</span>
+              {hasSubmitted && emailErrors[0] && <span className='login errors'>{emailErrors[0]}</span>}
             </div>
           </div>
           <div className='login input-wrapper'>
@@ -114,13 +134,13 @@ const LoginForm = ({ setShowLogin, setShowSignup }) => {
               onChange={updatePassword}
             />
             <div className='login-errors-container'>
-              <span className='login errors'>{passwordErrors[0]}</span>
+              {hasSubmitted && passwordErrors[0] && <span className='login errors'>{passwordErrors[0]}</span>}
             </div>
           </div>
         </div>
         <div className='login buttons'>
-          <div className='button demo' onClick={signInDemo}>Demo User</div>
           <button disabled={isDisabled} className='button login form' type='submit'>Login</button>
+          <div className='button demo' onClick={signInDemo}>Demo User</div>
         </div>
       </form>
       <div className='signup-redirect-container'>

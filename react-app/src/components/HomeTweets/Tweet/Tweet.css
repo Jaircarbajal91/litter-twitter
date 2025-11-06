@@ -1,75 +1,89 @@
 .tweet-container {
-  width: 600px;
-  height: fit-content;
+  width: 100%;
+  min-height: fit-content;
   display: flex;
-  border-bottom: .2px solid grey;
-  box-sizing: border-box;
-  border-top: none;
-  padding: .5em;
-  font-size: .9rem;
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 16px;
+  font-size: 15px;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .tweet-container:hover {
-  background-color: #121212;
+  background-color: var(--bg-hover);
 }
 
 .tweet-left-container {
-  width: 13%;
+  width: auto;
   height: fit-content;
+  margin-right: 12px;
+  flex-shrink: 0;
 }
 
 .profile-image {
   border-radius: 50%;
   object-fit: cover;
-  width: 3.3em;
-  min-width: 3.3em;
-  height: 3.3em;
-  min-height: 3.3em;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
   cursor: pointer;
-  margin-left: 1em;
+  transition: opacity 0.2s;
+}
+
+.profile-image:hover {
+  opacity: 0.8;
 }
 
 .tweet-right-container {
   display: flex;
   flex-direction: column;
-  width: 85%;
+  width: 100%;
+  min-width: 0;
 }
 
 .top-tweet-container {
   display: flex;
-  margin-bottom: 1em;
+  margin-bottom: 2px;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.middle-tweet-container {
+  margin-bottom: 12px;
 }
 
 .bottom-tweet-container {
   display: flex;
-  justify-content: space-evenly;
-  height: 2em;
+  justify-content: space-between;
+  max-width: 425px;
   align-items: center;
-  margin-top: 1em;
+  margin-top: 4px;
 }
 
 .tweet-delete-container {
   position: relative;
+  flex-shrink: 0;
 }
 
 .tweet.icon.delete {
-  width: 2em;
+  width: 18.75px;
+  height: 18.75px;
 }
 
 .tweet.icon {
-  width: 1.4em;
+  width: 18.75px;
+  height: 18.75px;
   cursor: pointer;
 }
 
 .tweet-name {
-  font-weight: 600;
-  max-width: 100%;
-  letter-spacing: -.05rem;
+  font-weight: 700;
+  font-size: 15px;
   cursor: pointer;
-  text-overflow: ellipsis;
+  display: inline;
+  color: var(--text-primary);
 }
 
 .tweet-name:hover {
@@ -78,39 +92,45 @@
 
 .tweet-user-info {
   display: flex;
-  width: fit-content;
-  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .tweet-content {
-  padding-right: 2em;
   word-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+  line-height: 1.3125;
+  color: var(--text-primary);
+  font-size: 15px;
 }
 
 .tweet.username,
 .tweet.created-at {
-  word-wrap: break-word;
-  color: #71767A;
-  margin-left: .7em;
-  margin-right: .1em;
-}
-
-.tweet.username {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin: 0;
   cursor: pointer;
 }
 
-.tweet.icon.heart.liked,
-.tweet.icon.heart:hover {
-  filter: invert(36%) sepia(89%) saturate(5470%) hue-rotate(327deg) brightness(90%) contrast(96%);
-  /* fill: #E0255E; */
+.tweet.username:hover {
+  text-decoration: underline;
+}
+
+.tweet.icon.heart.liked {
+  filter: invert(27%) sepia(95%) saturate(7478%) hue-rotate(340deg) brightness(96%) contrast(95%);
 }
 
 .tweet.icon.heart {
-  width: 1.12em;
+  width: 18.75px;
+  height: 18.75px;
 }
 
-.tweet.icon.comment:hover {
-  filter: invert(52%) sepia(84%) saturate(2079%) hue-rotate(177deg) brightness(93%) contrast(102%);
+.tweet.icon.comment {
+  width: 18.75px;
+  height: 18.75px;
 }
 
 .heart-icon-container,
@@ -118,71 +138,69 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: .3em;
-  height: 1.4em;
-  width: 1.4em;
+  width: 34.75px;
+  height: 34.75px;
   cursor: pointer;
   border-radius: 50%;
+  transition: background-color 0.2s;
+  position: relative;
 }
 
-
 .comment-icon-container:hover {
-  background-color: rgba(27, 93, 137, .5);
-  border-radius: 50%;
+  background-color: rgba(29, 155, 240, 0.1);
+}
+
+.comment-icon-container:hover .tweet.icon.comment {
+  filter: invert(52%) sepia(84%) saturate(2079%) hue-rotate(177deg) brightness(93%) contrast(102%);
 }
 
 .heart-icon-container:hover {
-  background-color: rgba(105, 33, 54, 0.5);
-  border-radius: 50%;
+  background-color: rgba(244, 33, 46, 0.1);
 }
 
+.heart-icon-container:hover .tweet.icon.heart {
+  filter: invert(27%) sepia(95%) saturate(7478%) hue-rotate(340deg) brightness(96%) contrast(95%);
+}
 
 .drop-down.tweet {
-  width: 20em;
-  height: 12em;
+  width: 300px;
+  min-height: fit-content;
   display: flex;
   flex-direction: column;
   position: absolute;
-  top: 1em;
-  right: .3em;
-  box-shadow: 0 0 10px rgb(113, 113, 113);
-  margin-bottom: -20px;
-  border-radius: .7em;
+  top: 0;
+  right: 0;
+  box-shadow: rgba(255, 255, 255, 0.2) 0px 0px 15px, rgba(255, 255, 255, 0.15) 0px 0px 3px 1px;
+  border-radius: 16px;
   box-sizing: border-box;
-  background-color: black;
+  background-color: var(--bg-secondary);
   z-index: 99;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
 .drop-down.item {
-  height: 50%;
+  min-height: 52px;
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   width: 100%;
-  padding-bottom: 1em;
+  padding: 16px;
   cursor: pointer;
-  border-radius: .7em;
+  transition: background-color 0.2s;
 }
 
 .drop-down.item:first-child {
-  border-radius: .7em .7em 0px 0px;
-  border: .5px solid grey;
-}
-
-.drop-down.item:nth-child(2) {
-  border-radius: 0px 0px .7em .7em;
-  border: .5px solid grey;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .drop-down.item:hover {
-  background-color: #71767A;
+  background-color: var(--bg-hover);
 }
 
 .drop-down.icon {
-  height: 2.5em;
-  max-height: 2.5em;
-  width: 2.5em;
-  max-width: 2.5em;
+  height: 20px;
+  width: 20px;
   border-radius: 50%;
   background-color: white;
 }
@@ -192,48 +210,81 @@
   display: flex;
   align-items: center;
   cursor: pointer;
+  gap: 4px;
 }
 
-.heart-info-container,
-.comment-info-container>div>span {
-  color: #71767A;
+.comment-counter,
+.heart-info-container > div {
+  color: var(--text-secondary);
+  font-size: 13px;
+  min-width: 32px;
 }
 
-.comment-info-container>div>span:hover {
-  color: #1B9BEF;
+.comment-info-container:hover .comment-counter {
+  color: var(--blue-comment);
 }
 
-.heart-icon-container>div>span:hover {
-  color: #B90F40;
+.heart-info-container:hover .comment-counter {
+  color: var(--red-heart);
 }
 
 .name-container {
-  max-width: 7em;
-  text-overflow: ellipsis;
-  overflow-x: hidden;
+  display: inline;
 }
 
 .tweet.icon.delete.container {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: .5em;
-  border-radius: 3em;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
 }
 
 .tweet.icon.delete.container:hover {
-  background-color: #313030;
+  background-color: rgba(29, 155, 240, 0.1);
 }
 
-
 .tweet-image-container {
-  max-width: 92%;
-  max-height: 20em;
-  margin-top: 1em;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
 .tweet-image-container > img {
-  max-width: 100%;
-  max-height: 20em;
-  border-radius: .7em;
+  width: 100%;
+  max-height: 400px;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.tweet-image-container > img:hover {
+  opacity: 0.95;
+}
+
+@media (max-width: 688px) {
+  .tweet-container {
+    padding: 12px;
+  }
+
+  .profile-image {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .tweet-content {
+    font-size: 15px;
+  }
+
+  .bottom-tweet-container {
+    max-width: 100%;
+    padding-right: 0;
+  }
 }

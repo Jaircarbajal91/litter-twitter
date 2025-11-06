@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.models import Tweet, comments, db, User, Comment, Like
 from app.forms import TweetForm
 from .auth_routes import validation_errors_to_error_messages
+from sqlalchemy.orm import joinedload, selectinload
 
 
 tweet_routes = Blueprint('tweets', __name__)
@@ -37,22 +38,37 @@ def get_all_user_tweets(username):
 @tweet_routes.route('/home')
 @login_required
 def get_all_tweets():
-    tweets = db.session.query(Tweet) \
-        .options(db.joinedload(Tweet.user)).all()
-    if tweets is not None and len(tweets) > 0:
-        tweets_details = []
-        for tweet in tweets:
+    # Get pagination parameters from query string
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    
+    # Query with pagination, ordered by created_at descending
+    # Use eager loading to prevent N+1 queries
+    paginated_tweets = db.session.query(Tweet) \
+        .options(
+            joinedload(Tweet.user),  # Load user (one-to-one)
+            selectinload(Tweet.tweet_comments).joinedload(Comment.user),  # Load comments and their users
+            selectinload(Tweet.tweet_comments).selectinload(Comment.comment_images),  # Load comment images
+            selectinload(Tweet.tweet_likes),  # Load likes
+            selectinload(Tweet.tweet_images)  # Load images
+        ) \
+        .order_by(Tweet.created_at.desc()) \
+        .paginate(page=page, per_page=per_page, error_out=False)
+    
+    tweets_details = []
+    if paginated_tweets.items:
+        for tweet in paginated_tweets.items:
             user = tweet.user.to_dict()
             tweet = tweet.to_dict()
             tweet['user'] = user
-            # comments = Comment.query.filter(Comment.tweet_id == tweet["id"]).all()
-            # if comments is not None and len(comments) > 0:
-            #     comments_result = [comment.to_dict() for comment in comments]
-            #     tweet["comments"] = comments_result
-            # else:
-            #     tweet["comments"] = []
             tweets_details.append(tweet)
-    return {'tweets': tweets_details}
+    
+    return {
+        'tweets': tweets_details,
+        'has_more': paginated_tweets.has_next,
+        'page': page,
+        'per_page': per_page
+    }
 
 
 @tweet_routes.route('/', methods=['POST'])

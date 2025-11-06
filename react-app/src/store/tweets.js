@@ -6,9 +6,10 @@ const DELETE_TWEET = 'tweets/DELETE_TWEET';
 const LIKE_TWEET = 'tweets/LIKE_TWEET';
 
 
-const getAllTweetsAction = (tweets) => ({
+const getAllTweetsAction = (data, replace = false) => ({
   type: GET_ALL_TWEETS,
-  tweets
+  tweets: data,
+  replace
 });
 
 const getUserTweetsAction = (tweets) => ({
@@ -37,13 +38,13 @@ const likeTweetAction = (like) => ({
 })
 
 
-export const getAllTweetsThunk = () => async (dispatch) => {
-  const response = await fetch('/api/tweets/home');
+export const getAllTweetsThunk = (page = 1, perPage = 20) => async (dispatch) => {
+  const response = await fetch(`/api/tweets/home?page=${page}&per_page=${perPage}`);
 
   if (response.ok) {
-    const tweets = await response.json();
-    await dispatch(getAllTweetsAction(tweets))
-    return tweets;
+    const data = await response.json();
+    await dispatch(getAllTweetsAction(data, page === 1))
+    return data;
   } else if (response.status < 500) {
     const data = await response.json();
     if (data.errors) {
@@ -160,18 +161,43 @@ export const deleteTweetThunk = (id) => async (dispatch) => {
 export default function tweetsReducer(state = {}, action) {
   switch (action.type) {
     case GET_ALL_TWEETS: {
-      const newState = {};
-      action.tweets.tweets.forEach(tweet => {
+      const newState = action.replace ? {} : { ...state };
+      const tweets = action.tweets.tweets || [];
+      
+      // Add tweets to normalized state
+      tweets.forEach(tweet => {
         newState[tweet.id] = tweet
       });
-      newState.tweetsList = [...action.tweets.tweets].sort(function (a, b) {
-        return new Date(b.created_at) - new Date(a.created_at);
-      })
-      newState.tweetsList.forEach(tweet => {
-        tweet.tweet_comments.sort(function (a, b) {
+      
+      // Update tweetsList - either replace or append
+      if (action.replace) {
+        newState.tweetsList = [...tweets].sort(function (a, b) {
           return new Date(b.created_at) - new Date(a.created_at);
+        });
+      } else {
+        // Merge with existing tweets, avoiding duplicates
+        const existingIds = new Set((state.tweetsList || []).map(t => t.id));
+        const newTweets = tweets.filter(t => !existingIds.has(t.id));
+        newState.tweetsList = [...(state.tweetsList || []), ...newTweets].sort(function (a, b) {
+          return new Date(b.created_at) - new Date(a.created_at);
+        });
+      }
+      
+      // Sort comments for each tweet
+      if (newState.tweetsList) {
+        newState.tweetsList.forEach(tweet => {
+          if (tweet.tweet_comments) {
+            tweet.tweet_comments.sort(function (a, b) {
+              return new Date(b.created_at) - new Date(a.created_at);
+            })
+          }
         })
-      })
+      }
+      
+      // Store pagination info
+      newState.hasMore = action.tweets.has_more === true || action.tweets.has_more === 'true'
+      newState.currentPage = action.tweets.page || 1;
+      
       return newState;
     }
     case GET_USER_TWEETS: {

@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from app.models import db, Image
+from app.models import db, Image, User
 from flask_login import current_user, login_required
 from .s3_image_upload import (
     upload_file_to_s3, allowed_file, get_unique_filename)
@@ -53,6 +53,10 @@ def upload_image():
       user_id = int(request.form.get('user_id'))
       new_image = Image(user_id=user_id, url=url, type=form_type, key=image.filename)
       db.session.add(new_image)
+      # Update user's profile_image field
+      user = User.query.get(user_id)
+      if user:
+        user.profile_image = url
       db.session.commit()
       return {"url": url}
 
@@ -62,13 +66,14 @@ def upload_image():
 @login_required
 def delete_image_from_bucket():
   key = request.form.get('key')
+  bucket_name = os.environ.get("S3_BUCKET")
   s3_recource=boto3.client(
     's3',
     aws_access_key_id=os.environ.get("S3_KEY"),
     aws_secret_access_key=os.environ.get("S3_SECRET")
   )
   s3_recource.delete_object(
-    Bucket='litter-twitter',
+    Bucket=bucket_name,
     Key=key
   )
   id = request.form.get('id')

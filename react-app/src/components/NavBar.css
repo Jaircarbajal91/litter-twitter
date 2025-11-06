@@ -1,65 +1,221 @@
 .navbar {
   position: sticky;
-  top: .5em;
-  padding: .5em;
-  width: 20em;
-  box-sizing: border-box;
-  max-height: 40em;
+  top: 0;
+  height: 100vh;
+  padding: 0 12px;
+  width: 100%;
+  max-width: 275px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  overflow-y: auto;
+}
+
+.navbar::-webkit-scrollbar {
+  display: none;
+}
+
+.navbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .icon.nav {
-  width: 15%;
+  width: 26.25px;
+  height: 26.25px;
 }
 
 .navlink-container {
   display: flex;
   align-items: center;
   width: 100%;
-  padding-left: .5em;
-}
-
-.icon.nav.signout {
-  width: 15%;
+  margin-bottom: 4px;
 }
 
 .logout.button,
 .navlink-container > a {
   display: flex;
   align-items: center;
-  width: 100%;
-  gap: 1.5em;
+  width: fit-content;
+  min-width: 50px;
+  gap: 20px;
   text-decoration: none;
-  box-sizing: border-box;
-  max-height: 4em;
-  color: white;
-  border-radius: 3em;
-  padding: 1em;
+  color: var(--text-primary);
+  border-radius: 9999px;
+  padding: 12px;
   cursor: pointer;
+  font-size: 20px;
+  font-weight: 400;
+  transition: background-color 0.2s;
+  position: relative;
 }
 
 .logout.button:hover,
 .navlink-container > a:hover {
-  background-color: rgb(26, 26, 26);
+  background-color: var(--hover-bg);
+}
+
+.navlink-container:first-child > a {
+  padding: 12px;
+  margin-bottom: 8px;
 }
 
 .navlink-container:first-child > a:hover {
-  background-color: black;
+  background-color: transparent;
+}
+
+.navlink-container > a.active {
+  font-weight: 700;
+}
+
+.navlink-container > a.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 32px;
+  background-color: var(--twitter-blue);
+  border-radius: 0 4px 4px 0;
 }
 
 .logout-button.container {
   display: flex;
-  margin-top: 2em;
-  justify-content: center;
+  margin-top: auto;
+  width: 100%;
+  padding-top: 12px;
 }
 
 .nav.new-tweet-button {
-  padding: .8em;
-  width: 80%;
-  font-size: 1rem;
-  border-radius: 3em;
+  padding: 16px 32px;
+  width: 90%;
+  font-size: 17px;
+  border-radius: 9999px;
   border: none;
-  background-color: #1B9BEF;
-  font-weight: 600;
+  background-color: var(--twitter-blue);
+  font-weight: 700;
   color: white;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.nav.new-tweet-button:hover {
+  background-color: var(--twitter-blue-hover);
+}
+
+/* Mobile responsive */
+@media (max-width: 1024px) {
+  .navbar {
+    width: 80px;
+    max-width: 80px;
+    align-items: center;
+  }
+
+  .navlink-container > a > span,
+  .logout.button > span {
+    display: none;
+  }
+
+  .navlink-container > a {
+    justify-content: center;
+    width: 50px;
+    min-width: 50px;
+    padding: 12px;
+  }
+
+  .navlink-container > a.active::before {
+    display: none;
+  }
+
+  .logout-button.container {
+    width: 100%;
+  }
+
+  .nav.new-tweet-button {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    position: relative;
+  }
+
+  .nav.new-tweet-button span {
+    display: none;
+  }
+
+  .nav.new-tweet-button::after {
+    content: '+';
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1;
+    position: absolute;
+  }
+}
+
+@media (max-width: 688px) {
+  .navbar {
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 8px 0;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    z-index: 1000;
+  }
+
+  .navlink-container {
+    margin-bottom: 0;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .navlink-container:first-child {
+    display: none;
+  }
+
+  .logout-button.container {
+    margin-top: 0;
+    width: auto;
+    padding-top: 0;
+  }
+
+  .nav.new-tweet-button {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    font-size: 28px;
+  }
+
+  .nav.new-tweet-button span {
+    display: none;
+  }
+
+  .nav.new-tweet-button::after {
+    content: '+';
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
 }

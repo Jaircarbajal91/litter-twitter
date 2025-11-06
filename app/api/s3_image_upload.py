@@ -27,14 +27,22 @@ def get_unique_filename(filename):
 
 def upload_file_to_s3(file, acl="public-read"):
     try:
+        # Note: When Object Ownership is set to "ACLs disabled", we don't set ACL
+        # Access is controlled via bucket policy instead
+        extra_args = {
+            "ContentType": file.content_type
+        }
+        
+        # Only set ACL if bucket has ACLs enabled (for backward compatibility)
+        # With ACLs disabled (recommended), bucket policy handles public access
+        # Uncomment the line below only if you have ACLs enabled:
+        # extra_args["ACL"] = acl
+        
         s3.upload_fileobj(
             file,
             BUCKET_NAME,
             file.filename,
-            ExtraArgs={
-                "ACL": acl,
-                "ContentType": file.content_type
-            }
+            ExtraArgs=extra_args
         )
     except Exception as e:
         # in case the our s3 upload fails

@@ -8,7 +8,9 @@ const NewTweetModal = ({sessionUser}) => {
 
   return (
     <>
-      <button className='nav new-tweet-button' onClick={() => setShowNewTweetFormModal(true)}>Tweet</button>
+      <button className='nav new-tweet-button' onClick={() => setShowNewTweetFormModal(true)}>
+        <span>Tweet</span>
+      </button>
       {showNewTweetFormModal && (
         <Modal onClose={() => setShowNewTweetFormModal(false)}>
           <NewTweetFormModal sessionUser={sessionUser} showNewTweetFormModal={showNewTweetFormModal} setShowNewTweetFormModal={setShowNewTweetFormModal}/>

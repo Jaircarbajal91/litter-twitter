@@ -62,13 +62,15 @@ def sign_up():
     form = SignUpForm()
     form['csrf_token'].data = request.cookies['csrf_token']
     if form.validate_on_submit():
+        # Use empty string or default if no profile image provided
+        profile_image = form.data.get('profileImage', '') or ''
         user = User(
             username=form.data['username'].lower(),
             email=form.data['email'],
             password=form.data['password'],
             first_name=form.data['firstName'],
             last_name=form.data['lastName'],
-            profile_image=form.data['profileImage']
+            profile_image=profile_image
         )
         db.session.add(user)
         db.session.commit()

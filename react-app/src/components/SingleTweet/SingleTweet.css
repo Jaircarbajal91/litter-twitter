@@ -3,9 +3,8 @@
   min-height: fit-content;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding-bottom: 3em;
-  border-bottom: .5px solid grey;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .top.single.tweet-container {
@@ -14,49 +13,91 @@
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  padding-right: 2em;
+  padding: 12px 0;
   cursor: unset;
 }
 
 .top.single.tweet-container:hover {
-  background-color: black;
+  background-color: transparent;
 }
 
 .top.mid.user-info.container {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 1.8em;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-left: 12px;
   flex-direction: column;
+  gap: 2px;
 }
 
 .user.info.container {
   display: flex;
+  align-items: center;
 }
 
 .middle-tweet-container.single {
-  padding: 1.5em;
-  border-bottom: .5px solid grey;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
   box-sizing: border-box;
-  width: 95%;
+  width: 100%;
 }
 
 .date-container {
   display: flex;
-  padding-left: 1.5em;
-  width: 95%;
+  padding: 12px 0;
+  width: 100%;
   align-items: center;
   justify-content: flex-start;
-  height: 2.5em;
+  min-height: 40px;
   box-sizing: border-box;
-  border-bottom: .5px solid grey;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.single.tweet.created-at {
+  color: var(--text-secondary);
+  font-size: 15px;
 }
 
 .single.bottom-tweet-container {
   display: flex;
-  width: 95%;
-  padding-bottom: 1em;
+  width: 100%;
+  padding: 12px 0;
   box-sizing: border-box;
-  border-bottom: .5px solid grey;
+  border-bottom: 1px solid var(--border-color);
+  max-width: 425px;
+}
+
+.comments-container {
+  width: 100%;
+}
+
+.tweet-image-container.single {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.tweet-image-container.single > img,
+.tweet-image.single {
+  width: 100%;
+  max-height: 400px;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.tweet-image-container.single > img:hover,
+.tweet-image.single:hover {
+  opacity: 0.95;
+}
+
+@media (max-width: 688px) {
+  .single.single.tweet.container {
+    padding: 12px;
+  }
 }
 

@@ -36,7 +36,7 @@ const LoginForm = ({ setShowLogin, setShowSignup }) => {
     }
 
     const data = await dispatch(login(email, password));
-    if (data) {
+    if (Array.isArray(data) && data.length) {
       setErrors(["Email or password are incorrect"])
     } else {
       setShowLogin(false)
@@ -92,7 +92,7 @@ const LoginForm = ({ setShowLogin, setShowSignup }) => {
   const signInDemo = async () => {
     const email = 'demo@aa.io'
     const password = 'password'
-    const data = await dispatch(login(email, password));
+    await dispatch(login(email, password));
     setShowLogin(false)
     history.push('/home')
   }

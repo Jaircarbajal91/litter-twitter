@@ -2,7 +2,10 @@ from flask import Blueprint, request
 from app.models import db, Image, User
 from flask_login import current_user, login_required
 from .s3_image_upload import (
-    upload_file_to_s3, allowed_file, get_unique_filename)
+    upload_file_to_s3,
+    get_unique_filename,
+    validate_image_file,
+)
 
 import boto3
 import os
@@ -21,11 +24,13 @@ def upload_image():
     form_type = request.form.get('type')
     user_id = request.form.get('user_id')
 
-    data = request.json
-    if not allowed_file(image.filename):
-        return {"errors": f"file type not permitted {data}"}, 400
+    is_valid, validation_result = validate_image_file(image)
+    if not is_valid:
+        return {"errors": validation_result}, 400
 
-    image.filename = get_unique_filename(image.filename)
+    sanitized_name = validation_result
+
+    image.filename = get_unique_filename(sanitized_name)
 
     upload = upload_file_to_s3(image)
 
@@ -37,28 +42,45 @@ def upload_image():
 
     url = upload["url"]
     # flask_login allows us to get the current user from the request
+    if user_id:
+        try:
+            user_id_int = int(user_id)
+        except (TypeError, ValueError):
+            return {"errors": "invalid user id"}, 400
+        if user_id_int != int(current_user.get_id()):
+            return {"errors": "unauthorized user id"}, 403
+    else:
+        return {"errors": "user id required"}, 400
+
     if form_type == 'tweet':
-      tweet_id = int(request.form.get('tweet_id'))
-      new_image = Image(user_id=user_id, url=url, type=form_type, tweet_id=tweet_id, key=image.filename)
+      try:
+        tweet_id = int(request.form.get('tweet_id'))
+      except (TypeError, ValueError):
+        return {"errors": "tweet id required"}, 400
+      new_image = Image(user_id=user_id_int, url=url, type=form_type, tweet_id=tweet_id, key=image.filename)
       db.session.add(new_image)
       db.session.commit()
       return {"url": url}
     if form_type == 'comment':
-      comment_id = int(request.form.get('comment_id'))
-      new_image = Image(user_id=user_id, url=url, type=form_type, comment_id=comment_id, key=image.filename)
+      try:
+        comment_id = int(request.form.get('comment_id'))
+      except (TypeError, ValueError):
+        return {"errors": "comment id required"}, 400
+      new_image = Image(user_id=user_id_int, url=url, type=form_type, comment_id=comment_id, key=image.filename)
       db.session.add(new_image)
       db.session.commit()
       return {"url": url}
     if form_type == 'user':
-      user_id = int(request.form.get('user_id'))
-      new_image = Image(user_id=user_id, url=url, type=form_type, key=image.filename)
+      new_image = Image(user_id=user_id_int, url=url, type=form_type, key=image.filename)
       db.session.add(new_image)
       # Update user's profile_image field
-      user = User.query.get(user_id)
+      user = User.query.get(user_id_int)
       if user:
         user.profile_image = url
       db.session.commit()
       return {"url": url}
+
+    return {"errors": "invalid form type"}, 400
 
 
 @image_routes.route("/", methods=["DELETE"])

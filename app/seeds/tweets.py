@@ -1,6 +1,7 @@
-from app.models import db, Tweet
+from app.models import db, Tweet, Image, Like
 from datetime import datetime, timedelta
 import random
+from .users import get_cat_image
 
 # Cat-related tweet content templates
 CAT_TWEETS = [
@@ -151,6 +152,36 @@ def seed_tweets():
                 user_id=user.id,
                 created_at=tweet_date
             )
+
+            # Occasionally add media to tweets
+            if random.random() < 0.6:  # ~60% of tweets with media
+                num_images = 1 if random.random() < 0.75 else 2
+                for media_index in range(num_images):
+                    try:
+                        image_url = get_cat_image()
+                    except Exception:
+                        image_url = None
+                    if image_url:
+                        image = Image(
+                            type='tweet',
+                            key=f"seed/tweet/{user.id}-{tweet_date.strftime('%Y%m%d%H%M')}-{media_index}-{random.randint(1000, 9999)}",
+                            url=image_url,
+                            user_id=user.id
+                        )
+                        tweet.tweet_images.append(image)
+
+            # Seed organic likes from other users
+            potential_likers = [u for u in users if u.id != user.id]
+            if potential_likers and random.random() < 0.85:  # Most tweets receive some likes
+                max_likes = min(len(potential_likers), 8)
+                num_likes = random.randint(1, max_likes)
+                likers = random.sample(potential_likers, num_likes)
+                for liker in likers:
+                    like = Like(
+                        user_id=liker.id
+                    )
+                    tweet.tweet_likes.append(like)
+
             tweets.append(tweet)
     
     print(f"Adding {len(tweets)} tweets to database...")

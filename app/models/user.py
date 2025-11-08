@@ -45,6 +45,10 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password, password)
 
     def to_dict(self):
+        banner_image = next(
+            (image.url for image in self.user_images if getattr(image, 'type', None) == 'user_header'),
+            None
+        )
         return {
             'id': self.id,
             'username': self.username,
@@ -52,6 +56,7 @@ class User(db.Model, UserMixin):
             'lastName': self.last_name,
             'email': self.email,
             'profileImage': self.profile_image,
+            'profileBannerImage': banner_image,
             'user_tweets': [x.to_dict() for x in self.user_tweets],
             'followers': [user.id for user in self.followers],
             'following': [user.id for user in self.following]

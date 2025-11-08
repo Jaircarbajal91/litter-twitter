@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useHistory } from 'react-router-dom';
-import { getUserTweetsThunk } from '../store/tweets';
+import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { followUserThunk, unfollowUserThunk, authenticate } from '../store/session';
 import './UserList.css'

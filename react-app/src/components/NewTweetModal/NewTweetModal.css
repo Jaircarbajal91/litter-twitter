@@ -1,0 +1,102 @@
+.new-tweet-modal {
+  width: 100%;
+  max-width: 520px;
+  box-sizing: border-box;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.new-tweet-modal__close {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  border-radius: 9999px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.new-tweet-modal__close img {
+  width: 18px;
+  height: 18px;
+}
+
+.new-tweet-modal__close:hover,
+.new-tweet-modal__close:focus-visible {
+  background-color: var(--bg-hover);
+  transform: scale(1.05);
+}
+
+.new-tweet-container.modal {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  gap: 16px;
+}
+
+.new-tweet-container.modal .right-new-tweet-container {
+  padding-top: 0;
+}
+
+.new-tweet-container.modal .new-tweet.form {
+  gap: 16px;
+}
+
+.new-tweet-container.modal .input.textarea {
+  min-height: 140px;
+}
+
+.new-tweet-container.modal .new-tweet-button.container {
+  gap: 12px;
+  padding-top: 16px;
+  margin-top: 0;
+}
+
+.new-tweet-char-count {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-right: auto;
+}
+
+.new-tweet-char-count.warning {
+  color: #ffd400;
+}
+
+.new-tweet-char-count.error {
+  color: #f4212e;
+  font-weight: 600;
+}
+
+@media (max-width: 688px) {
+  .new-tweet-modal {
+    padding: 16px;
+    max-width: 100%;
+    height: 100%;
+    margin: 0;
+    padding-top: 20px;
+  }
+
+  .new-tweet-container.modal {
+    flex: 1;
+  }
+
+  .new-tweet-container.modal .new-tweet.form {
+    flex: 1;
+  }
+
+  .new-tweet-container.modal .input.textarea {
+    min-height: 180px;
+  }
+}
+
+

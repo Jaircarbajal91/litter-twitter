@@ -55,6 +55,35 @@
   scrollbar-width: none;
 }
 
+#modal-content.media-modal {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  width: auto;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  margin: 0;
+  padding: 0;
+}
+
+#modal-content.media-modal .tweet-image-modal-container {
+  background-color: transparent;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  max-width: min(90vw, 700px);
+  max-height: 90vh;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+#modal-content.media-modal .tweet-image-modal {
+  display: block;
+  border-radius: 0;
+  width: 100%;
+  height: auto;
+}
+
 @media screen and (max-width: 688px) {
   #modal-background {
     background-color: rgba(0, 0, 0, 0.9);
@@ -70,6 +99,20 @@
     margin: 0;
     box-shadow: none;
     border: none;
+  }
+
+  #modal-content.media-modal {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #modal-content.media-modal .tweet-image-modal-container {
+    max-width: min(100vw, 700px);
+    max-height: calc(100vh - 32px);
+    margin: 16px;
   }
 }
 

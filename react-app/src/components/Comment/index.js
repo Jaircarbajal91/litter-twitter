@@ -1,31 +1,16 @@
 import { useState, useEffect } from "react";
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { useHistory } from "react-router-dom";
-import commentIcon from '../../assets/images/commentIcon.svg'
-import heartIcon from '../../assets/images/heartIcon.svg'
 import litter from '../../assets/images/threeDots.svg'
 import stretch from '../../assets/images/stretch.png'
 import stretch2 from '../../assets/images/stretch2.png'
+import { Modal } from '../../context/Modal'
 import './Comment.css'
 
 const Comment = ({ tweet, comment, sessionUser, tweetOwner, setCommentToUpdate, setShowUpdateCommentForm, setShowDeleteComment }) => {
-  const [users, setUsers] = useState([]);
   const [showDropDown, setShowDropDown] = useState(false)
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [imageModalUrl, setImageModalUrl] = useState(null)
   const history = useHistory()
-
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoaded(false)
-      if (sessionUser) {
-        const response = await fetch('/api/users/');
-        const responseData = await response.json();
-        setUsers(responseData.users);
-        setIsLoaded(true)
-      }
-    }
-    fetchData();
-  }, []);
 
   useEffect(() => {
     if (!showDropDown) return;
@@ -39,9 +24,19 @@ const Comment = ({ tweet, comment, sessionUser, tweetOwner, setCommentToUpdate, 
 
   const newDate = Date.parse(comment.created_at);
   const formattedDate = formatDistanceToNow(newDate, { includeSeconds: true })
-  const user = users.find(user => user.id === comment.user_id)
-  return isLoaded && (
+  const user = comment.user
+
+  if (!user) return null
+
+  return (
     <div className="tweet-container comment">
+      {imageModalUrl && (
+        <Modal onClose={() => setImageModalUrl(null)} contentClassName="media-modal">
+          <div className='tweet-image-modal-container'>
+            <img className='tweet-image-modal' src={imageModalUrl} alt="reply attachment" />
+          </div>
+        </Modal>
+      )}
       <div className='tweet-left-container'>
         <img onClick={(e) => {
           e.stopPropagation()
@@ -63,7 +58,7 @@ const Comment = ({ tweet, comment, sessionUser, tweetOwner, setCommentToUpdate, 
             }} className='tweet username'> @{user.username} </span>
             <span className='tweet created-at'>• {formattedDate} ago</span>
           </div>
-          {sessionUser.id === comment.user_id && <div className='tweet-delete-container'>
+          {sessionUser?.id === comment.user_id && <div className='tweet-delete-container'>
             <div className='tweet icon delete container' onClick={(e) => {
               e.stopPropagation()
               setShowDropDown(prev => !prev)
@@ -76,8 +71,10 @@ const Comment = ({ tweet, comment, sessionUser, tweetOwner, setCommentToUpdate, 
                 setCommentToUpdate(comment)
                 setShowUpdateCommentForm(true)
               }} className='drop-down item'>
-                <img className='drop-down icon' src={stretch} alt="strech icon" />
                 <span className='drop-down text'>Update Reply</span>
+                <span className='drop-down icon-badge drop-down-icon-update'>
+                  <img className='drop-down icon' src={stretch} alt="strech icon" />
+                </span>
               </div>
               <div onClick={(e) => {
                 e.stopPropagation()
@@ -85,7 +82,9 @@ const Comment = ({ tweet, comment, sessionUser, tweetOwner, setCommentToUpdate, 
                 setShowDeleteComment(true)
               }} className='drop-down item'>
                 <span className='drop-down text'>Delete Reply</span>
-                <img className='drop-down icon' src={stretch2} alt="strech icon" />
+                <span className='drop-down icon-badge drop-down-icon-delete'>
+                  <img className='drop-down icon' src={stretch2} alt="strech icon" />
+                </span>
               </div>
             </div>}
           </div>}
@@ -99,9 +98,18 @@ const Comment = ({ tweet, comment, sessionUser, tweetOwner, setCommentToUpdate, 
             <span className='tweet-content comment'>{comment.content}</span>
           </div>
           {comment.comment_images.length > 0 && <div className='tweet-image-container'>
-              {comment.comment_images.map(image => (
-                <img key={image.id} className='tweet-image' src={image.url} alt="" />
-              ))}
+            {comment.comment_images.map(image => (
+              <img
+                key={image.id}
+                className='tweet-image'
+                src={image.url}
+                alt=""
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setImageModalUrl(image.url)
+                }}
+              />
+            ))}
           </div>}
         </div>
         {/* <div className='bottom-tweet-container comment'>

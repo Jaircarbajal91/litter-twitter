@@ -1,6 +1,7 @@
-from app.models import db, Comment
+from app.models import db, Comment, Image
 from datetime import datetime, timedelta
 import random
+from .users import get_cat_image
 
 # Cat-related comment responses that form conversations
 COMMENT_RESPONSES = [
@@ -256,6 +257,23 @@ def seed_comments():
                 tweet_id=tweet.id,
                 created_at=comment_date
             )
+
+            # Add an occasional image to comments using existing image APIs
+            if random.random() < 0.3:  # ~30% of comments get images
+                try:
+                    image_url = get_cat_image()
+                except Exception:
+                    image_url = None
+
+                if image_url:
+                    image = Image(
+                        type='comment',
+                        key=f"seed/comment/{tweet.id}-{i}-{random.randint(1000, 9999)}",
+                        url=image_url,
+                        user_id=commenter.id
+                    )
+                    comment.comment_images.append(image)
+
             comments.append(comment)
     
     print(f"Adding {len(comments)} comments to database...")

@@ -64,11 +64,13 @@
   padding: 12px 0;
   box-sizing: border-box;
   border-bottom: 1px solid var(--border-color);
-  max-width: 425px;
+  gap: 24px;
 }
 
 .comments-container {
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .tweet-image-container.single {
@@ -90,9 +92,163 @@
   cursor: pointer;
 }
 
+.tweet-image-modal-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: calc(100vh - 120px);
+  max-width: calc(100vw - 120px);
+}
+
+.tweet-image-modal {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 16px;
+  background-color: var(--bg-primary);
+}
+
 .tweet-image-container.single > img:hover,
 .tweet-image.single:hover {
   opacity: 0.95;
+}
+
+.tweet-delete-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tweet-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tweet-action-button:hover,
+.tweet-action-button:focus-visible {
+  background-color: var(--bg-hover);
+}
+
+.tweet-action-button:focus-visible {
+  outline: 2px solid var(--twitter-blue);
+  outline-offset: 2px;
+}
+
+.tweet.icon.delete {
+  width: 18px;
+  height: 18px;
+}
+
+.drop-down.tweet {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: rgba(15, 20, 25, 0.2) 0px 12px 24px, rgba(15, 20, 25, 0.15) 0px 0px 4px 1px;
+  overflow: hidden;
+  z-index: 1000;
+  animation: dropdown-fade-in 0.18s ease forwards;
+}
+
+.drop-down.item {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.drop-down.item + .drop-down.item {
+  border-top: 1px solid var(--border-color);
+}
+
+.drop-down.item:hover {
+  background-color: var(--bg-hover);
+}
+
+.drop-down.text {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.drop-down.item.drop-down-update:hover .drop-down.text {
+  color: var(--twitter-blue);
+}
+
+.drop-down.item.drop-down-delete .drop-down.text {
+  color: var(--red-heart);
+}
+
+.drop-down.item.drop-down-delete:hover .drop-down.text {
+  color: #ff6b72;
+}
+
+.drop-down.icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(1.25) contrast(1.05);
+}
+
+.drop-down.icon-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.drop-down.item:hover .drop-down.icon-badge {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 20, 25, 0.34);
+}
+
+.drop-down-icon-update {
+  background-color: rgba(29, 155, 240, 0.18);
+  border-color: rgba(29, 155, 240, 0.35);
+}
+
+.drop-down-icon-delete {
+  background-color: rgba(244, 33, 46, 0.18);
+  border-color: rgba(244, 33, 46, 0.35);
+}
+
+@keyframes dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 688px) {

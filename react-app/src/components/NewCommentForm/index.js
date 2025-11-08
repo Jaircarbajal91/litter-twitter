@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { getAllTweetsThunk } from '../../store/tweets'
+import { getSingleTweetThunk } from '../../store/tweets'
 import fileSelector from '../../assets/images/fileSelector.svg'
 import ButtonLoadingAnimation from '../LoadingAnimation/ButtonLoadingAnimation'
 import exit from '../../assets/images/exit.svg'
+import validateImageFile from '../../utils/validateImageFile'
 
 import './NewCommentForm.css'
 
@@ -15,8 +16,9 @@ const NewCommentForm = ({ sessionUser, tweet, setShowNewCommentForm, showNewComm
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [previewImage, setPreviewImage] = useState(null)
   const [image, setImage] = useState(null);
+  const [imageError, setImageError] = useState(null);
   const history = useHistory()
-  const { email, firstName, lastName, profileImage, username } = sessionUser
+  const { profileImage, username } = sessionUser
   const dispatch = useDispatch()
   useEffect(() => {
     const newErrors = []
@@ -47,17 +49,20 @@ const NewCommentForm = ({ sessionUser, tweet, setShowNewCommentForm, showNewComm
         formData.append("type", "comment");
         formData.append("comment_id", data.id)
         formData.append("user_id", sessionUser.id)
-        const res = await fetch('/api/images/', {
+        await fetch('/api/images/', {
           method: "POST",
           body: formData,
         });
       }
       setImage(null);
       setPreviewImage(null)
-      await dispatch(getAllTweetsThunk())
+      setImageError(null)
+      await dispatch(getSingleTweetThunk(tweet.id))
       setContent('')
       setIsSubmitting(true)
-      setShowNewCommentForm(false)
+      if (setShowNewCommentForm) {
+        setShowNewCommentForm(false)
+      }
     } else {
       const data = await res.json()
       setHasSubmitted(true)
@@ -66,35 +71,49 @@ const NewCommentForm = ({ sessionUser, tweet, setShowNewCommentForm, showNewComm
   }
   const updateImage = async (e) => {
     const file = e.target.files[0];
-    setImage(file);
-    const reader = new FileReader(file)
-    reader.readAsDataURL(file);
-    reader.onloadend = function () {
-      setPreviewImage(reader.result)
+    if (file) {
+      const { valid, error } = validateImageFile(file);
+      if (!valid) {
+        setImage(null);
+        setPreviewImage(null);
+        setImageError(error);
+        return;
+      }
+      setImageError(null);
+      setImage(file);
+      const reader = new FileReader()
+      reader.readAsDataURL(file);
+      reader.onloadend = function () {
+        setPreviewImage(reader.result)
+      }
     }
   }
+  const containerClasses = ['new-tweet-container', 'comment', showNewCommentForm ? 'modal' : 'inline']
+
   return (
-    <div className={showNewCommentForm ? "new-tweet-container comment modal" : "new-tweet-container comment"}>
+    <div className={containerClasses.join(' ')}>
       <div className='right-new-tweet-container'>
-        <img onClick={() => history.push(`/${username}`)} className='new-tweet profile-image' src={profileImage} alt="" />
+        <img onClick={() => history.push(`/${username}`)} className='new-tweet profile-image' src={profileImage} alt={`${username}'s avatar`} />
       </div>
       <div className='left-new-tweet-container'>
         <div className='new-tweet errors'>
           {errors.length > 0 && errors.map((error, i) => (
             <p key={i}>{error}</p>
           ))}
+          {imageError && <p>{imageError}</p>}
         </div>
         <div className='replying-to content'>
           <span>Replying to </span>
           <span>@{tweet.user.username}</span>
         </div>
-        <form className='new-tweet form comment' onSubmit={handleSubmit}>
+        <form className='new-comment form' onSubmit={handleSubmit}>
           <textarea
             type="textarea"
             placeholder="Tweet your reply"
             className='input textarea'
             cols='60'
-            rows='8'
+            rows='4'
+            maxLength={280}
             value={content}
             onChange={(e) => {
               setContent(e.target.value)
@@ -102,32 +121,37 @@ const NewCommentForm = ({ sessionUser, tweet, setShowNewCommentForm, showNewComm
               setErrors([])
             }}
           />
-           <div className='preview-image-container'>
+          <div className='preview-image-container comment'>
             {previewImage && <>
-              <img className="preview image" src={previewImage} ></img>
+              <img className="preview image" src={previewImage} alt="Selected reply attachment preview" />
               <img onClick={(e) => {
                 setPreviewImage(null)
                 setImage(null);
-              }} className='remove-preivew-img icon' src={exit} alt="" />
+                setImageError(null);
+              }} className='remove-preivew-img icon' src={exit} alt="Remove attachment" />
             </>}
           </div>
-          <label htmlFor={showNewCommentForm ? "img-upload-comment-modal" : "img-upload-comment"}><img className='file-selector' src={fileSelector} alt="" /> Add Image</label>
-          <input
-            type="file"
-            accept=".png,
-                            .jpeg,
-                            .jpg,
-                            .gif,"
-            id={showNewCommentForm ? "img-upload-comment-modal" : "img-upload-comment"}
-            multiple
-            style={{
-              display: "none"
-            }}
-            onClick={event => event.target.value = null}
-            onChange={updateImage}
-          />
-          <div className='new-tweet-button container'>
-            {isSubmitting ? <ButtonLoadingAnimation /> : <button className='new-tweet button' disabled={errors.length > 0 || content.length === 0} type='submit'>Meow</button>}
+          <div className='new-comment footer'>
+            <div className='new-comment tools'>
+              <label htmlFor={showNewCommentForm ? "img-upload-comment-modal" : "img-upload-comment"} className='new-comment upload'>
+                <img className='file-selector' src={fileSelector} alt="Upload icon" /> Add Image
+              </label>
+              <span className={`new-comment counter ${content.length > 260 ? 'warning' : ''}`}>{content.length}/280</span>
+            </div>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              id={showNewCommentForm ? "img-upload-comment-modal" : "img-upload-comment"}
+              multiple
+              style={{
+                display: "none"
+              }}
+              onClick={event => event.target.value = null}
+              onChange={updateImage}
+            />
+            <div className='new-comment button-wrapper'>
+              {isSubmitting ? <ButtonLoadingAnimation /> : <button className='new-tweet button' disabled={errors.length > 0 || imageError || content.length === 0} type='submit'>Meow</button>}
+            </div>
           </div>
         </form>
       </div>

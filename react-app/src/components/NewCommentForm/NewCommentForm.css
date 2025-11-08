@@ -1,22 +1,138 @@
 .new-tweet-container.comment {
-  width: 95%;
-  /* border: 1px solid green; */
+  width: 100%;
 }
 
-.replying-to.content > span:first-child {
-  color: #757575;
+.new-tweet-container.comment.inline {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
 }
-.replying-to.content > span:nth-child(2) {
-  color: #1B9BEF;
+
+.new-tweet-container.comment.modal {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px 20px;
 }
 
 .replying-to.content {
-  position: relative;
-  top: 1em;
-  font-size: .9rem;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
 }
 
-.new-tweet.form.comment > textarea {
-  width: 95%;
-  height: 45%;
+.replying-to.content > span:first-child {
+  color: var(--text-secondary);
+}
+
+.replying-to.content > span:nth-child(2) {
+  color: var(--twitter-blue);
+  margin-left: 4px;
+}
+
+.new-comment.form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.new-comment.form .input.textarea {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  resize: none;
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.4;
+  padding: 0;
+}
+
+.new-comment.form .input.textarea:focus {
+  outline: none;
+}
+
+.new-comment.form .input.textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.preview-image-container.comment {
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.preview-image-container.comment .preview.image {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.new-comment.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+
+.new-comment.tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.new-comment.upload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--twitter-blue);
+  font-weight: 500;
+}
+
+.new-comment.upload:hover {
+  text-decoration: underline;
+}
+
+.new-comment.counter {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.new-comment.counter.warning {
+  color: var(--red-heart);
+}
+
+.new-comment.button-wrapper {
+  margin-left: auto;
+}
+
+.new-comment.button-wrapper .new-tweet.button {
+  border-radius: 999px;
+  padding: 8px 18px;
+}
+
+@media (max-width: 688px) {
+  .new-tweet-container.comment.inline {
+    padding: 12px 16px;
+  }
+
+  .new-comment.footer {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+  }
+
+  .new-comment.tools {
+    width: 100%;
+    justify-content: space-between;
+  }
 }

@@ -90,9 +90,9 @@ export const followUserThunk = (id) => async (dispatch) => {
     }
   });
   if (response.ok) {
-    const user = await response.json();
+    const data = await response.json();
     await dispatch(followUser(id))
-    return user;
+    return data.user;
   } else if (response.status < 500) {
     const data = await response.json();
     if (data.errors) {
@@ -112,9 +112,9 @@ export const unfollowUserThunk = (id) => async (dispatch) => {
     }
   });
   if (response.ok) {
-    const user = await response.json();
-    await dispatch(followUser(id))
-    return user;
+    const data = await response.json();
+    await dispatch(unfollowUser(id))
+    return data.user;
   } else if (response.status < 500) {
     const data = await response.json();
     if (data.errors) {
@@ -164,12 +164,26 @@ export default function reducer(state = initialState, action) {
     case REMOVE_USER:
       return { user: null }
     case FOLLOW_USER: {
-      const newState = { ...state }
-      return newState;
+      if (!state.user) return state;
+      const following = new Set(state.user.following || []);
+      following.add(action.id);
+      return {
+        user: {
+          ...state.user,
+          following: Array.from(following)
+        }
+      };
     }
     case UNFOLLOW_USER: {
-      const newState = { ...state }
-      return newState;
+      if (!state.user) return state;
+      return {
+        user: {
+          ...state.user,
+          following: (state.user.following || []).filter(
+            (followedId) => followedId !== action.id
+          )
+        }
+      };
     }
     default:
       return state;

@@ -1,4 +1,4 @@
-from app.models import db, User
+from app.models import db, User, Image
 import requests
 import random
 import time
@@ -67,6 +67,12 @@ def seed_users():
         profile_image='https://res.cloudinary.com/dvkihdv0n/image/upload/v1661910820/litter-twitter/VIER_20PFOTEN_2016-07-08_011-4993x3455-1920x1329_ri4djn.jpg'
     )
     users.append(demo)
+    demo_banner = Image(
+        type='user_header',
+        key=f"seed/user-banner/demo-{random.randint(1000, 9999)}",
+        url=get_cat_image()
+    )
+    demo.user_images.append(demo_banner)
     
     # Generate 100 cat users
     used_usernames = {'demo'}
@@ -104,6 +110,14 @@ def seed_users():
             profile_image=profile_image
         )
         users.append(user)
+
+        banner_image = get_cat_image()
+        banner = Image(
+            type='user_header',
+            key=f"seed/user-banner/{username}-{random.randint(1000, 9999)}",
+            url=banner_image
+        )
+        user.user_images.append(banner)
         
         if (i + 1) % 20 == 0:
             print(f"  Created {i + 1} users...")

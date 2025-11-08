@@ -1,12 +1,10 @@
 import { useDispatch } from "react-redux";
-import { useHistory } from "react-router-dom";
-import { getAllTweetsThunk } from "../../store/tweets";
+import { getSingleTweetThunk } from "../../store/tweets";
 import { useState, useEffect } from "react";
 import handleDeleteImage from "../../utils/DeleteImage";
 import ButtonLoadingAnimation from "../LoadingAnimation/ButtonLoadingAnimation";
 
 const DeleteComment = ({ setShowDeleteComment, comment }) => {
-  const history = useHistory();
   const dispatch = useDispatch();
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -23,7 +21,7 @@ const DeleteComment = ({ setShowDeleteComment, comment }) => {
       method: 'DELETE'
     })
     if (res.ok) {
-      await dispatch(getAllTweetsThunk());
+      await dispatch(getSingleTweetThunk(comment.tweet_id));
       setShowDeleteComment(false);
     } else {
       const data = await res.json()

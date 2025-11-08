@@ -12,7 +12,6 @@ const HomeTweets = ({ sessionUser }) => {
   const [tweet, setTweet] = useState({})
   const [showUpdateTweetForm, setShowUpdateTweetForm] = useState(false)
   const [showDeleteTweet, setShowDeleteTweet] = useState(false)
-  const [liked, setLiked] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
   const [hasUserScrolled, setHasUserScrolled] = useState(false)

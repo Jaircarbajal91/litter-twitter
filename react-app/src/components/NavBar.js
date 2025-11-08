@@ -1,21 +1,15 @@
-import React, { useState } from 'react';
-import { NavLink, useHistory } from 'react-router-dom';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
 import LogoutButton from './auth/LogoutButton';
 import WhiteCatIcon from '../assets/images/WhiteCatIcon.svg'
 import HomeIcon from '../assets/images/home.svg'
-import NewTweetForm from '../components/NewTweetForm'
 import githubIcon from '../assets/images/github.svg'
 import linkedInIcon from '../assets/images/linkedin.svg'
-import { Modal } from '../context/Modal'
 import NewTweetModal from './NewTweetModal';
 import ProfileIcon from  '../assets/images/profile.svg'
 import './NavBar.css'
-import { useEffect } from 'react';
 
 const NavBar = ({ sessionUser }) => {
-  const history = useHistory()
-  const [showNewTweetForm, setShowNewTweetForm] = useState(false)
-
   return (
     <nav className='navbar container'>
       {/* {showNewTweetForm && <Modal onClose={() => setShowNewTweetForm(false)}>

@@ -6,7 +6,7 @@ import fileSelector from '../../assets/images/fileSelector.svg'
 import exit from '../../assets/images/exit.svg'
 import ButtonLoadingAnimation from '../LoadingAnimation/ButtonLoadingAnimation'
 import './NewTweetForm.css'
-import { set } from 'date-fns'
+import validateImageFile from '../../utils/validateImageFile'
 
 const NewTweetForm = ({ sessionUser, setShowNewTweetForm, showNewTweetForm }) => {
   const [errors, setErrors] = useState([])
@@ -14,8 +14,9 @@ const NewTweetForm = ({ sessionUser, setShowNewTweetForm, showNewTweetForm }) =>
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [image, setImage] = useState(null);
+  const [imageError, setImageError] = useState(null);
   const [previewImage, setPreviewImage] = useState(null)
-  const { email, firstName, lastName, profileImage, username } = sessionUser
+  const { profileImage, username } = sessionUser
   const history = useHistory()
   const dispatch = useDispatch()
   const location = useLocation()
@@ -43,13 +44,14 @@ const NewTweetForm = ({ sessionUser, setShowNewTweetForm, showNewTweetForm }) =>
         formData.append("type", "tweet");
         formData.append("tweet_id", data.id)
         formData.append("user_id", sessionUser.id)
-        const res = await fetch('/api/images/', {
+        await fetch('/api/images/', {
           method: "POST",
           body: formData,
         });
       }
       setImage(null);
       setPreviewImage(null)
+      setImageError(null)
       await dispatch(getAllTweetsThunk())
       setShowNewTweetForm(false)
       setContent('')
@@ -60,30 +62,40 @@ const NewTweetForm = ({ sessionUser, setShowNewTweetForm, showNewTweetForm }) =>
   }
 
   const checkKeyDown = (e) => {
-    if (e.keyCode == 13) return false;
+    if (e.keyCode === 13) return false;
   };
 
 
   const updateImage = async (e) => {
     const file = e.target.files[0];
-    // console.log('value 👉️', fileRef.current.value);
-    setImage(file);
-    const reader = new FileReader(file)
-    reader.readAsDataURL(file);
-    reader.onloadend = function () {
-      setPreviewImage(reader.result)
+    if (file) {
+      const { valid, error } = validateImageFile(file);
+      if (!valid) {
+        setImage(null);
+        setPreviewImage(null);
+        setImageError(error);
+        return;
+      }
+      setImageError(null);
+      setImage(file);
+      const reader = new FileReader()
+      reader.readAsDataURL(file);
+      reader.onloadend = function () {
+        setPreviewImage(reader.result)
+      }
     }
   }
   return (
     <div className='new-tweet-container'>
       <div className='right-new-tweet-container'>
-        <img onClick={() => history.push(`/${username}`)} className='new-tweet profile-image' src={profileImage} alt="" />
+        <img onClick={() => history.push(`/${username}`)} className='new-tweet profile-image' src={profileImage} alt={`${username}'s avatar`} />
       </div>
       <div className='left-new-tweet-container'>
         <div className='new-tweet errors'>
           {errors.length > 0 && errors.map((error, i) => (
             <p key={i}>{error}</p>
           ))}
+          {imageError && <p>{imageError}</p>}
         </div>
         <form className='new-tweet form' onSubmit={handleSubmit} >
           <textarea
@@ -102,20 +114,18 @@ const NewTweetForm = ({ sessionUser, setShowNewTweetForm, showNewTweetForm }) =>
           />
           <div className='preview-image-container'>
             {previewImage && <>
-              <img className="preview image" src={previewImage} ></img>
+              <img className="preview image" src={previewImage} alt="Selected tweet attachment preview" />
               <img onClick={(e) => {
                 setPreviewImage(null)
                 setImage(null);
-              }} className='remove-preivew-img icon' src={exit} alt="" />
+                setImageError(null);
+              }} className='remove-preivew-img icon' src={exit} alt="Remove attachment" />
             </>}
           </div>
-          <label htmlFor="img-upload"><img className='file-selector' src={fileSelector} alt="" /> Add Image</label>
+          <label htmlFor="img-upload"><img className='file-selector' src={fileSelector} alt="Upload icon" /> Add Image</label>
           <input
             type="file"
-            accept=".png,
-                            .jpeg,
-                            .jpg,
-                            .gif,"
+            accept="image/png,image/jpeg,image/gif,image/webp"
             id="img-upload"
             multiple
             style={{
@@ -125,7 +135,7 @@ const NewTweetForm = ({ sessionUser, setShowNewTweetForm, showNewTweetForm }) =>
             onChange={updateImage}
           />
           <div className='new-tweet-button container'>
-            {isSubmitting ? <ButtonLoadingAnimation /> : <button className='new-tweet button' disabled={errors.length > 0 || content.length === 0 || isSubmitting} type='submit'>Meow</button>}
+            {isSubmitting ? <ButtonLoadingAnimation /> : <button className='new-tweet button' disabled={errors.length > 0 || imageError || content.length === 0 || isSubmitting} type='submit'>Meow</button>}
           </div>
         </form>
       </div>

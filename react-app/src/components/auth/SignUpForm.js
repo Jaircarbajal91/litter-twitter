@@ -6,6 +6,7 @@ import exit from '../../assets/images/exit.svg'
 import BlueCatIcon from '../../assets/images/BlueCatIcon.svg'
 import fileSelector from '../../assets/images/fileSelector.svg'
 import './SignupForm.css'
+import validateImageFile from '../../utils/validateImageFile'
 
 const SignUpForm = ({ setShowSignup, setShowLogin }) => {
   const [errors, setErrors] = useState([]);
@@ -72,7 +73,7 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
               });
               
               if (res.ok) {
-                const imageData = await res.json();
+                await res.json();
                 // Image uploaded successfully
               }
             }
@@ -89,9 +90,18 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
   const updateProfileImage = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const { valid, error } = validateImageFile(file);
+      if (!valid) {
+        setProfileImageFile(null);
+        setPreviewImage(null);
+        setProfileImageCondClass('profile-image-cond-error');
+        setProfileImageErrors([error]);
+        return;
+      }
+
       setProfileImageFile(file);
       setErrors([]);
-      const reader = new FileReader(file);
+      const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onloadend = function () {
         setPreviewImage(reader.result);
@@ -118,9 +128,6 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
       email: [],
       password: [],
     }
-    const regex = /^http[^ \!@\$\^&\(\)\+\=]+(\.png|\.jpeg|\.gif|\.jpg)$/;
-
-
     if (username.length < 1) errors.username.push('* Please enter a username')
     if (username.includes(' ')) {
       setUsernameCondClass('username-cond-error')
@@ -333,22 +340,22 @@ const SignUpForm = ({ setShowSignup, setShowLogin }) => {
             <div className='profile-image-upload-container'>
               {previewImage && (
                 <div className='preview-profile-image-container'>
-                  <img className="preview-profile-image" src={previewImage} alt="Profile preview" />
+                  <img className="preview-profile-image" src={previewImage} alt="" />
                   <img 
                     onClick={removeProfileImage} 
                     className='remove-profile-img-icon' 
                     src={exit} 
-                    alt="Remove image" 
+                    alt="Remove profile" 
                   />
                 </div>
               )}
               <label htmlFor="profile-image-upload" className='profile-image-label'>
-                <img className='file-selector' src={fileSelector} alt="" />
+                <img className='file-selector' src={fileSelector} alt="Upload icon" />
                 <span>Add Profile Image</span>
               </label>
               <input
                 type='file'
-                accept=".png,.jpeg,.jpg,.gif"
+                accept="image/png,image/jpeg,image/gif,image/webp"
                 id="profile-image-upload"
                 name='profile-image'
                 onChange={updateProfileImage}

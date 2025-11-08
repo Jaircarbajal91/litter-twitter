@@ -2,7 +2,7 @@ import { format } from 'date-fns'
 import { useParams, useHistory, Redirect } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
-import { getAllTweetsThunk } from "../../store/tweets"
+import { getSingleTweetThunk } from "../../store/tweets"
 import commentIcon from '../../assets/images/commentIcon.svg'
 import heartIcon from '../../assets/images/heartIcon.svg'
 import fullHeartIcon from '../../assets/images/FullHeart.svg'
@@ -16,7 +16,6 @@ import Comment from '../Comment'
 import NewCommentForm from '../NewCommentForm'
 import UpdateCommentForm from '../UpdateCommentForm'
 import DeleteComment from '../DeleteComment'
-import PageNotFound from '../PageNotFound'
 import { likeTweetThunk } from '../../store/tweets'
 import './SingleTweet.css'
 import LoadingAnimation from '../LoadingAnimation'
@@ -31,22 +30,23 @@ const SingleTweet = ({ sessionUser }) => {
   const [showDeleteComment, setShowDeleteComment] = useState(false)
   const [showDropDown, setShowDropDown] = useState(false)
   const [isLikedByUser, setIsLikedByUser] = useState(false)
+  const [imageModalUrl, setImageModalUrl] = useState(null)
   const dispatch = useDispatch()
   const { tweetId } = useParams()
   const history = useHistory()
   const tweet = useSelector(state => state.tweets[Number(tweetId)])
 
   const likesArray = tweet?.tweet_likes
-  const likedTweet = likesArray?.find(like => like.user_id === sessionUser.id)
+  const likedTweet = likesArray?.find(like => like.user_id === sessionUser?.id)
 
   useEffect(() => {
-    (async function () {
-      await dispatch(getAllTweetsThunk())
-      setTimeout(() => {
-        setIsLoaded(true)
-      }, 1000)
-    }())
-  }, [tweet?.content])
+    if (!tweetId) return
+    setIsLoaded(false)
+    ;(async function () {
+      await dispatch(getSingleTweetThunk(tweetId))
+      setIsLoaded(true)
+    })()
+  }, [dispatch, tweetId])
 
   useEffect(() => {
     if (!showDropDown) return;
@@ -58,10 +58,8 @@ const SingleTweet = ({ sessionUser }) => {
   }, [showDropDown]);
 
   useEffect(() => {
-    if (likedTweet) {
-      setIsLikedByUser(true)
-    }
-  }, [likesArray?.length, likedTweet])
+    setIsLikedByUser(!!likedTweet)
+  }, [likedTweet, tweet?.tweet_likes?.length])
 
   let newDate;
   let formattedDate;
@@ -76,15 +74,16 @@ const SingleTweet = ({ sessionUser }) => {
 
   const handleLike = async (e) => {
     e.stopPropagation()
-    if (isLikedByUser) {
-      const unliked = fetch(`/api/likes/${likedTweet.id}`, {
+    if (!tweet) return
+    if (isLikedByUser && likedTweet) {
+      await fetch(`/api/likes/${likedTweet.id}`, {
         method: 'DELETE'
       })
       setIsLikedByUser(false)
-      const tweets = dispatch(getAllTweetsThunk())
+      await dispatch(getSingleTweetThunk(tweet.id))
     } else {
-      const like = dispatch(likeTweetThunk(tweet.id))
-      const tweets = dispatch(getAllTweetsThunk())
+      await dispatch(likeTweetThunk(tweet.id))
+      await dispatch(getSingleTweetThunk(tweet.id))
     }
   }
   return isLoaded ? (
@@ -105,13 +104,20 @@ const SingleTweet = ({ sessionUser }) => {
         {showDeleteComment && <Modal onClose={() => setShowDeleteComment(false)}>
           <DeleteComment comment={commentToUpdate} sessionUser={sessionUser} tweet={tweet} setShowDeleteComment={setShowDeleteComment} />
         </Modal>}
+        {imageModalUrl && (
+          <Modal onClose={() => setImageModalUrl(null)} contentClassName="media-modal">
+            <div className='tweet-image-modal-container'>
+              <img className='tweet-image-modal' src={imageModalUrl} alt="tweet attachment" />
+            </div>
+          </Modal>
+        )}
         <div className="top single tweet-container">
           <div className='user info container'>
             <div className=' top left user-info container'>
               <img onClick={(e) => {
                 e.stopPropagation()
                 history.push(`/${user.username}`)
-              }} className='profile-image' src={user.profileImage} alt="profile-image" />
+              }} className='profile-image' src={user.profileImage} alt={`${user.firstName} ${user.lastName}'s avatar`} />
             </div>
             <div className='top mid user-info container'>
               <span onClick={(e) => {
@@ -124,28 +130,51 @@ const SingleTweet = ({ sessionUser }) => {
               }} className='tweet username'> @{user.username} </span>
             </div>
           </div>
-          {sessionUser.id === user.id && <div className='tweet-delete-container'>
-            <div className='tweet icon delete container' onClick={(e) => {
-              e.stopPropagation()
-              setShowDropDown(prev => !prev)
-            }} >
-              <img className="tweet icon delete" src={litter} alt="delete-icon" />
-            </div>
-            {showDropDown && <div className='drop-down tweet'>
-              <div onClick={(e) => {
+          {sessionUser?.id === user.id && <div className='tweet-delete-container'>
+            <button
+              type='button'
+              className='tweet-action-button'
+              aria-label='Tweet options'
+              aria-haspopup='menu'
+              aria-expanded={showDropDown}
+              onClick={(e) => {
                 e.stopPropagation()
-                setShowUpdateTweetForm(true)
-              }} className='drop-down item'>
-                <img className='drop-down icon' src={stretch} alt="strech icon" />
+                setShowDropDown(prev => !prev)
+              }}
+            >
+              <img className='tweet icon delete' src={litter} alt='tweet options icon' />
+            </button>
+            {showDropDown && <div className='drop-down tweet' role='menu'>
+              <button
+                type='button'
+                role='menuitem'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowDropDown(false)
+                  setShowUpdateTweetForm(true)
+                }}
+                className='drop-down item drop-down-update'
+              >
                 <span className='drop-down text'>Update Tweet</span>
-              </div>
-              <div onClick={(e) => {
-                e.stopPropagation()
-                setShowDeleteTweet(true)
-              }} className='drop-down item'>
+                <span className='drop-down icon-badge drop-down-icon-update'>
+                  <img className='drop-down icon' src={stretch} alt='update tweet icon' />
+                </span>
+              </button>
+              <button
+                type='button'
+                role='menuitem'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowDropDown(false)
+                  setShowDeleteTweet(true)
+                }}
+                className='drop-down item drop-down-delete'
+              >
                 <span className='drop-down text'>Delete Tweet</span>
-                <img className='drop-down icon' src={stretch2} alt="strech icon" />
-              </div>
+                <span className='drop-down icon-badge drop-down-icon-delete'>
+                  <img className='drop-down icon' src={stretch2} alt='delete tweet icon' />
+                </span>
+              </button>
             </div>}
           </div>}
         </div>
@@ -153,9 +182,18 @@ const SingleTweet = ({ sessionUser }) => {
           <div className='tweet-content-container single'>
             <span className='tweet-content'>{tweet.content}</span>
           </div>
-          {tweet.tweet_images.map.length && <div className='tweet-image-container single'>
+          {!!tweet.tweet_images?.length && <div className='tweet-image-container single'>
               {tweet.tweet_images.map(image => (
-                <img key={image.id} className='tweet-image single' src={image.url} alt="" />
+                <img
+                  key={image.id}
+                  className='tweet-image single'
+                  src={image.url}
+                  alt="Tweet attachment"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setImageModalUrl(image.url)
+                  }}
+                />
               ))}
           </div>}
         </div>

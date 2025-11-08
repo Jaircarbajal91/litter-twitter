@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow, intlFormatDistance } from 'date-fns'
+import { intlFormatDistance } from 'date-fns'
 import { useState, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import commentIcon from '../../../assets/images/commentIcon.svg'
@@ -7,26 +7,22 @@ import fullHeartIcon from '../../../assets/images/FullHeart.svg'
 import litter from '../../../assets/images/threeDots.svg'
 import stretch from '../../../assets/images/stretch.png'
 import stretch2 from '../../../assets/images/stretch2.png'
-import { Modal } from '../../../context/Modal'
-import UpdateTweetForm from '../../UpdateTweetForm'
-import DeleteTweet from '../../DeleteTweet'
 import { likeTweetThunk } from '../../../store/tweets'
 import { useDispatch } from 'react-redux'
-import { getAllTweetsThunk } from '../../../store/tweets'
 import './Tweet.css'
 
 const Tweet = ({ setTweet, tweet, sessionUser, setShowDeleteTweet, setShowUpdateTweetForm }) => {
   const [showDropDown, setShowDropDown] = useState(false)
-  const [isLoaded, setIsLoaded] = useState(false)
   const [isLikedByUser, setIsLikedByUser] = useState(false)
   const [likeCounter, setLikeCounter] = useState(tweet.tweet_likes.length)
-  const [likesArray, setLikesArray] = useState(tweet.tweet_likes)
-  const [likedTweet, setLikedTweet] = useState(likesArray.find(like => like.user_id === sessionUser.id))
+  const [likedTweet, setLikedTweet] = useState(() =>
+    tweet.tweet_likes.find(like => like.user_id === sessionUser?.id) || null
+  )
   const newDate = Date.parse(tweet.created_at);
   const formattedDate = intlFormatDistance(new Date(newDate), new Date())
   const history = useHistory()
   const { user } = tweet
-  const { email, firstName, lastName, profileImage, username, id } = user
+  const { firstName, lastName, profileImage, username, id } = user
 
   const dispatch = useDispatch()
 
@@ -40,15 +36,18 @@ const Tweet = ({ setTweet, tweet, sessionUser, setShowDeleteTweet, setShowUpdate
   }, [showDropDown]);
 
   useEffect(() => {
-    if (likedTweet) {
-      setIsLikedByUser(true)
-    }
-  }, [likesArray.length, likedTweet])
+    setIsLikedByUser(Boolean(likedTweet))
+  }, [likedTweet])
+
+  useEffect(() => {
+    setLikeCounter(tweet.tweet_likes.length)
+    setLikedTweet(tweet.tweet_likes.find(like => like.user_id === sessionUser?.id) || null)
+  }, [sessionUser?.id, tweet.tweet_likes])
 
   const handleLike = async (e) => {
     e.stopPropagation()
-    if (isLikedByUser) {
-      const unliked = fetch(`/api/likes/${likedTweet.id}`, {
+    if (isLikedByUser && likedTweet) {
+      await fetch(`/api/likes/${likedTweet.id}`, {
         method: 'DELETE'
       })
       setIsLikedByUser(false)
@@ -67,7 +66,7 @@ const Tweet = ({ setTweet, tweet, sessionUser, setShowDeleteTweet, setShowUpdate
         <img onClick={(e) => {
           e.stopPropagation()
           history.push(`/${username}`)
-        }} className='profile-image' src={profileImage} alt="" />
+        }} className='profile-image' src={profileImage} alt={`${username}'s avatar`} />
       </div>
       <div className='tweet-right-container'>
         <div className='top-tweet-container'>
@@ -97,8 +96,10 @@ const Tweet = ({ setTweet, tweet, sessionUser, setShowDeleteTweet, setShowUpdate
                 setTweet(tweet)
                 setShowUpdateTweetForm(true)
               }} className='drop-down item'>
-                <img className='drop-down icon' src={stretch} alt="strech icon" />
                 <span className='drop-down text'>Update Tweet</span>
+                <span className='drop-down icon-badge drop-down-icon-update'>
+                  <img className='drop-down icon' src={stretch} alt="strech icon" />
+                </span>
               </div>
               <div onClick={(e) => {
                 e.stopPropagation()
@@ -106,7 +107,9 @@ const Tweet = ({ setTweet, tweet, sessionUser, setShowDeleteTweet, setShowUpdate
                 setShowDeleteTweet(true)
               }} className='drop-down item'>
                 <span className='drop-down text'>Delete Tweet</span>
-                <img className='drop-down icon' src={stretch2} alt="strech icon" />
+                <span className='drop-down icon-badge drop-down-icon-delete'>
+                  <img className='drop-down icon' src={stretch2} alt="strech icon" />
+                </span>
               </div>
             </div>}
           </div>}
@@ -117,7 +120,7 @@ const Tweet = ({ setTweet, tweet, sessionUser, setShowDeleteTweet, setShowUpdate
           </div>
           {tweet.tweet_images.length > 0 && <div className='tweet-image-container'>
               {tweet.tweet_images.map(image => (
-                <img key={image.id} className='tweet-image' src={image.url} alt="" />
+                <img key={image.id} className='tweet-image' src={image.url} alt="Tweet attachment" />
               ))}
           </div>}
         </div>

@@ -1,5 +1,5 @@
 from app.models import db, Comment, Image
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
 from .users import get_cat_image
 
@@ -224,7 +224,9 @@ def seed_comments():
         responses = get_comment_responses(tweet.content, num_comments)
         
         # Get tweet's creation date
-        tweet_date = tweet.created_at if tweet.created_at else datetime.now()
+        tweet_date = tweet.created_at if tweet.created_at else datetime.now(timezone.utc)
+        if tweet_date.tzinfo is None or tweet_date.tzinfo.utcoffset(tweet_date) is None:
+            tweet_date = tweet_date.replace(tzinfo=timezone.utc)
         
         for i, response_text in enumerate(responses):
             # Select a random user (but not the tweet author for most comments)
@@ -247,9 +249,11 @@ def seed_comments():
             comment_date = tweet_date + timedelta(hours=hours_after, minutes=minutes_after)
             
             # Ensure comment date is not in the future
-            now = datetime.now()
+            now = datetime.now(timezone.utc)
             if comment_date > now:
                 comment_date = now
+            if comment_date.tzinfo is None or comment_date.tzinfo.utcoffset(comment_date) is None:
+                comment_date = comment_date.replace(tzinfo=timezone.utc)
             
             comment = Comment(
                 content=response_text,

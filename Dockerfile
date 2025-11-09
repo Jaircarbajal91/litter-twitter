@@ -1,5 +1,10 @@
-# Start with the python:3.9 image
-FROM python:3.9
+# Start with the python:3.9 image (Heroku base image uses 3.9.18)
+FROM python:3.9.18-slim
+# Install build dependencies needed for psycopg2 and other packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 # Set the following enviroment variables
 # REACT_APP_BASE_URL -> Your deployment URL
 ENV REACT_APP_BASE_URL=https://litter-twitter.herokuapp.com/

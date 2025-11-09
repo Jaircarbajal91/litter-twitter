@@ -6,37 +6,50 @@ on:
 
 jobs:
   BuildAndDeploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     # https://github.com/actions/setup-node
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
-        node-version: '16'
+        node-version: '18'
         cache: 'npm'
         cache-dependency-path: react-app/package-lock.json
     - name: Build React App
       working-directory: react-app
       # CI=false allows the build to ignore any warnings when building
-      run: npm install && CI=false npm run build
+      run: npm ci && CI=false npm run build
 
     # https://github.com/actions/setup-python
     # If a student sees this, they could speed up their builds
     # by moving install from docker to cached GH action runner
     # Have fun (after you have a passing project!) :)
-    - uses: actions/setup-python@v3
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.9'
         cache: 'pip'
     - run: pip install pipenv
 
-    - name: Update requirements.txt for container install
-      run: pipenv requirements > requirements.txt
+    - name: Install dependencies and generate requirements.txt
+      run: |
+        pipenv install --system --deploy || pipenv install --system
+        pipenv requirements > requirements.txt || pipenv lock --requirements > requirements.txt
+        grep -q "requests" requirements.txt || echo "requests==2.31.0" >> requirements.txt
+        cat requirements.txt
+
+    - name: Install Heroku CLI
+      run: |
+        curl https://cli-assets.heroku.com/install.sh | sh
 
     - name: Login to Heroku Container registry
       env:
         HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
       run: heroku container:login
+
+    - name: Set Heroku stack to container
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: heroku stack:set container -a ${{ secrets.HEROKU_APP_NAME }}
 
     - name: Build Container and push
       env:

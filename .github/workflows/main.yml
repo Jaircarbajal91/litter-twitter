@@ -20,23 +20,6 @@ jobs:
       # CI=false allows the build to ignore any warnings when building
       run: npm install --legacy-peer-deps && CI=false npm run build
 
-    # https://github.com/actions/setup-python
-    # If a student sees this, they could speed up their builds
-    # by moving install from docker to cached GH action runner
-    # Have fun (after you have a passing project!) :)
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.9'
-        cache: 'pip'
-    - run: pip install pipenv
-
-    - name: Install dependencies and generate requirements.txt
-      run: |
-        pipenv install --system --deploy || pipenv install --system
-        pipenv requirements > requirements.txt || pipenv lock --requirements > requirements.txt
-        grep -q "requests" requirements.txt || echo "requests==2.31.0" >> requirements.txt
-        cat requirements.txt
-
     - name: Install Heroku CLI
       run: |
         curl https://cli-assets.heroku.com/install.sh | sh

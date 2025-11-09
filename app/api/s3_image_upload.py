@@ -3,11 +3,18 @@ import botocore  # noqa: F401
 import imghdr
 import os
 import uuid
+import logging
 
 from werkzeug.utils import secure_filename
 
 BUCKET_NAME = os.environ.get("S3_BUCKET")
-S3_LOCATION = f"https://{BUCKET_NAME}.s3.amazonaws.com/"
+AWS_REGION = os.environ.get("AWS_DEFAULT_REGION", "us-west-2")
+logger = logging.getLogger(__name__)
+
+if BUCKET_NAME:
+    S3_LOCATION = f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/"
+else:
+    S3_LOCATION = ""
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 ALLOWED_MIME_TYPES = {
     "image/png",
@@ -20,6 +27,7 @@ MAX_IMAGE_FILE_SIZE = int(os.environ.get("MAX_IMAGE_FILE_SIZE", 5 * 1024 * 1024)
 
 s3 = boto3.client(
    "s3",
+   region_name=AWS_REGION,
    aws_access_key_id=os.environ.get("S3_KEY"),
    aws_secret_access_key=os.environ.get("S3_SECRET")
 )
@@ -91,6 +99,7 @@ def upload_file_to_s3(file, acl="public-read"):
         )
     except Exception as e:
         # in case the our s3 upload fails
+        logger.exception("S3 upload failed")
         return {"errors": str(e)}
 
     return {"url": f"{S3_LOCATION}{file.filename}"}
